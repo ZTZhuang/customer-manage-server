@@ -3,6 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { RedisModule } from './redis.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './response.Interceptor';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { Customer } from './customer/entities/customer.entity';
@@ -23,20 +26,27 @@ import { CustomerModule } from './customer/customer.module';
       poolSize: 10,
       connectorPackage: 'mysql2',
       extra: {
-        authPlugin: 'sha256_password',
-      },
+        authPlugin: 'sha256_password'
+      }
     }),
     JwtModule.register({
       global: true,
       secret: 'jwt_login_secret',
       signOptions: {
-        expiresIn: '7d',
-      },
+        expiresIn: '1d'
+      }
     }),
+    RedisModule,
     CustomerModule,
-    UserModule,
+    UserModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor
+    }
+  ]
 })
 export class AppModule {}

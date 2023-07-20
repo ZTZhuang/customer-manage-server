@@ -20,7 +20,7 @@ export class UserService {
 
   async login(user: LoginUserDto) {
     const foundUser = await this.userRepository.findOneBy({
-      username: user.username,
+      username: user.username
     });
 
     if (!foundUser) {
@@ -29,12 +29,15 @@ export class UserService {
     if (foundUser.password !== md5(user.password)) {
       throw new HttpException('密码错误', 200);
     }
+    if (foundUser.forbidden) {
+      throw new HttpException('账号已被停用，请联系管理员', 200);
+    }
     return foundUser;
   }
 
   async create(createUserDto: CreateUserDto) {
     const foundUser = await this.userRepository.findOneBy({
-      username: createUserDto.username,
+      username: createUserDto.username
     });
     if (foundUser) {
       throw new HttpException('用户已存在', 200);
@@ -43,7 +46,7 @@ export class UserService {
     try {
       await this.userRepository.save({
         ...createUserDto,
-        password: md5(createUserDto.password),
+        password: md5(createUserDto.password)
       });
       return '注册成功';
     } catch (e) {
@@ -56,15 +59,15 @@ export class UserService {
   }
 
   findOne(id: number) {
-    return this.userRepository.find({
-      where: { id },
+    return this.userRepository.findOneBy({
+      id: id
     });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
     return this.userRepository.save({
       id,
-      updateUserDto,
+      updateUserDto
     });
   }
 

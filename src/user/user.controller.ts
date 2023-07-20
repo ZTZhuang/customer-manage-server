@@ -7,13 +7,14 @@ import {
   Param,
   Delete,
   Inject,
+  Request,
   Res,
   UseGuards,
-  ValidationPipe,
+  ValidationPipe
 } from '@nestjs/common';
+import { RedisClientType } from 'redis';
 import { UserService } from './user.service';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -26,25 +27,37 @@ export class UserController {
   @Inject(JwtService)
   private jwtService: JwtService;
 
-  @Post('login')
-  async login(
-    @Body(ValidationPipe) user: LoginUserDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const foundUser = await this.userService.login(user);
+  @Inject('REDIS_CLIENT')
+  private redisClient: RedisClientType;
 
+  @Post('login')
+  async login(@Body(ValidationPipe) user: LoginUserDto) {
+    const foundUser = await this.userService.login(user);
     if (foundUser) {
       const token = await this.jwtService.signAsync({
         user: {
           id: foundUser.id,
-          username: foundUser.username,
-        },
+          username: foundUser.username
+        }
       });
-      res.setHeader('authorization', 'bearer ' + token);
-      return 'login success';
-    } else {
-      return 'login fail';
+      await this.redisClient.set(token, foundUser.id, { EX: 3600 * 24 });
+      return { token };
     }
+  }
+
+  @Post('logout')
+  @UseGuards(LoginGuard)
+  async logout(@Request() req) {
+    const token = req.headers.authorization.split(' ')[1];
+    await this.redisClient.del(token);
+    return req.user;
+  }
+
+  @Get('info')
+  @UseGuards(LoginGuard)
+  async getInfo(@Request() req) {
+    const info = await this.userService.findOne(+req.user.id);
+    return info;
   }
 
   @Post()
@@ -67,10 +80,7 @@ export class UserController {
 
   @Patch(':id')
   @UseGuards(LoginGuard)
-  update(
-    @Param('id') id: string,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
-  ) {
+  update(@Param('id') id: string, @Body(ValidationPipe) updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
