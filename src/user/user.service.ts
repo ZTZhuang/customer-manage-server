@@ -24,13 +24,13 @@ export class UserService {
     });
 
     if (!foundUser) {
-      throw new HttpException('用户名不存在', 200);
+      throw new HttpException('用户名不存在', 0);
     }
     if (foundUser.password !== md5(user.password)) {
-      throw new HttpException('密码错误', 200);
+      throw new HttpException('密码错误', 0);
     }
     if (foundUser.forbidden) {
-      throw new HttpException('账号已被停用，请联系管理员', 200);
+      throw new HttpException('账号已被停用，请联系管理员', 0);
     }
     return foundUser;
   }
@@ -40,22 +40,26 @@ export class UserService {
       username: createUserDto.username
     });
     if (foundUser) {
-      throw new HttpException('用户已存在', 200);
+      throw new HttpException('用户已存在', 0);
     }
 
     try {
       await this.userRepository.save({
         ...createUserDto,
-        password: md5(createUserDto.password)
+        password: md5(createUserDto.password),
+        isAdmin: false,
+        forbidden: false
       });
       return '注册成功';
     } catch (e) {
-      return '注册失败';
+      throw new HttpException('注册失败', 0);
     }
   }
 
   findAll() {
-    return this.userRepository.find();
+    return this.userRepository.find({
+      where: { isAdmin: false }
+    });
   }
 
   findOne(id: number) {
@@ -65,10 +69,17 @@ export class UserService {
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return this.userRepository.save({
-      id,
-      updateUserDto
-    });
+    const data = updateUserDto.password
+      ? {
+          id,
+          ...updateUserDto,
+          password: md5(updateUserDto.password)
+        }
+      : {
+          id,
+          ...updateUserDto
+        };
+    return this.userRepository.save(data);
   }
 
   remove(id: number) {

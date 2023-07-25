@@ -8,7 +8,6 @@ import {
   Delete,
   Inject,
   Request,
-  Res,
   UseGuards,
   ValidationPipe
 } from '@nestjs/common';
@@ -19,6 +18,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { LoginGuard } from 'src/login.guard';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -68,8 +68,15 @@ export class UserController {
 
   @Get()
   @UseGuards(LoginGuard)
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    const list = await this.userService.findAll();
+    return list.map((user: User) => {
+      return {
+        ...user,
+        createTime: user.getFormattedCreateTime(),
+        updateTime: user.getFormattedUpdateTime()
+      };
+    });
   }
 
   @Get(':id')
