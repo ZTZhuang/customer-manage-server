@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Customer } from '../../customer/entities/customer.entity';
 
 @Entity()
 export class User {
@@ -6,13 +7,11 @@ export class User {
   id: number;
 
   @Column({
-    length: 50,
     comment: '用户名'
   })
   username: string;
 
   @Column({
-    length: 50,
     comment: '密码'
   })
   password: string;
@@ -36,6 +35,9 @@ export class User {
     comment: '更新时间'
   })
   updateTime: Date;
+
+  @OneToMany(() => Customer, customer => customer.user)
+  customers: Customer[];
 
   getFormattedCreateTime(): string {
     // 自定义时间格式化方式，这里以 'YYYY-MM-DD HH:mm:ss' 格式表示

@@ -7,29 +7,32 @@ import { Customer } from './entities/customer.entity';
 
 @Injectable()
 export class CustomerService {
-
   @InjectRepository(Customer)
   private customerRepository: Repository<Customer>;
 
-
-  create(createCustomerDto: CreateCustomerDto) {
-    this.customerRepository.save(createCustomerDto)
+  create(createCustomerDto: CreateCustomerDto, id: number) {
+    this.customerRepository.save({
+      ...createCustomerDto,
+      createBy: id
+    });
   }
 
-  findAll() {
-    return this.customerRepository.find();
+  findAll(id: number) {
+    return this.customerRepository.find({
+      where: { createBy: id }
+    });
   }
 
   findOne(id: number) {
     return this.customerRepository.findOne({
-      where: { id },
+      where: { id }
     });
   }
 
   update(id: number, updateCustomerDto: UpdateCustomerDto) {
     this.customerRepository.save({
       id,
-      ...updateCustomerDto,
+      ...updateCustomerDto
     });
   }
 
