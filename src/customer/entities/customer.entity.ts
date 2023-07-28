@@ -1,4 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn
+} from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 
 @Entity({
@@ -54,6 +62,7 @@ export class Customer {
   remark: string;
 
   @ManyToOne(() => User, user => user.customers)
+  @JoinColumn({ name: 'createBy', referencedColumnName: 'id' })
   user: User;
 
   getFormattedCreateTime(): string {

@@ -38,34 +38,4 @@ export class User {
 
   @OneToMany(() => Customer, customer => customer.user)
   customers: Customer[];
-
-  getFormattedCreateTime(): string {
-    // 自定义时间格式化方式，这里以 'YYYY-MM-DD HH:mm:ss' 格式表示
-    const formattedDate = `${this.createTime.getFullYear()}-${(this.createTime.getMonth() + 1)
-      .toString()
-      .padStart(2, '0')}-${this.createTime.getDate().toString().padStart(2, '0')} ${this.createTime
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${this.createTime.getMinutes().toString().padStart(2, '0')}:${this.createTime
-      .getSeconds()
-      .toString()
-      .padStart(2, '0')}`;
-
-    return formattedDate;
-  }
-
-  getFormattedUpdateTime(): string {
-    // 自定义时间格式化方式，这里以 'YYYY-MM-DD HH:mm:ss' 格式表示
-    const formattedDate = `${this.updateTime.getFullYear()}-${(this.updateTime.getMonth() + 1)
-      .toString()
-      .padStart(2, '0')}-${this.updateTime.getDate().toString().padStart(2, '0')} ${this.updateTime
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${this.updateTime.getMinutes().toString().padStart(2, '0')}:${this.updateTime
-      .getSeconds()
-      .toString()
-      .padStart(2, '0')}`;
-
-    return formattedDate;
-  }
 }

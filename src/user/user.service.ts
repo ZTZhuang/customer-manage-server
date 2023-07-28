@@ -56,10 +56,17 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return this.userRepository.find({
-      where: { isAdmin: false }
-    });
+  async findAll() {
+    const [users] = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.customers', 'customer')
+      .where('user.isAdmin = :isAdmin', { isAdmin: false })
+      .getManyAndCount();
+
+    return users.map((user: User) => ({
+      ...user,
+      customerCount: user.customers.length
+    }));
   }
 
   findOne(id: number) {

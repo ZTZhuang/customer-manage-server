@@ -73,10 +73,30 @@ export class UserController {
     return list.map((user: User) => {
       return {
         ...user,
-        createTime: user.getFormattedCreateTime(),
-        updateTime: user.getFormattedUpdateTime()
+        createTime: this.getFormattedTime(user.createTime),
+        updateTime: this.getFormattedTime(user.updateTime),
+        customers: user.customers.map(customer => {
+          return {
+            ...customer,
+            createTime: customer.getFormattedCreateTime(),
+            updateTime: customer.getFormattedCreateTime()
+          };
+        })
       };
     });
+  }
+
+  getFormattedTime(time): string {
+    // 自定义时间格式化方式，这里以 'YYYY-MM-DD HH:mm:ss' 格式表示
+    const formattedDate = `${time.getFullYear()}-${(time.getMonth() + 1).toString().padStart(2, '0')}-${time
+      .getDate()
+      .toString()
+      .padStart(2, '0')} ${time.getHours().toString().padStart(2, '0')}:${time
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+
+    return formattedDate;
   }
 
   @Get(':id')
